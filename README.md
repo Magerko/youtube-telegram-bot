@@ -71,6 +71,11 @@ Telegram-бот на **aiogram 3**, который отслеживает ука
 4. Найдите **YouTube Data API v3** → нажмите **Enable**.
 5. Перейдите в **APIs & Services → Credentials → Create credentials → API key**.
 6. Скопируйте полученный ключ.
+7. Сразу нажмите **Edit API key** (или **Restrict key** в окне создания) и настройте ограничения:
+   - **Application restrictions** → **None** (бот работает с бэкенда, IP может меняться).
+   - **API restrictions** → **Restrict key** → в списке отметьте только **YouTube Data API v3** → **Save**.
+
+> Без ограничений ключ может использоваться для любых Google API — если он утечёт, кто-то израсходует вашу квоту. Restriction на одно API — must have.
 
 > Бесплатная квота YouTube API — 10 000 единиц в сутки; одна проверка канала тратит ~3–5 единиц, поэтому при `CHECK_INTERVAL=300` (5 мин) с 10 каналами квоты хватает с большим запасом.
 
