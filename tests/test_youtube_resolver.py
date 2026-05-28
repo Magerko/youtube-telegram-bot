@@ -1,7 +1,3 @@
-"""Парсер канала из URL/ID/handle. YouTube API мокаем — реальной сети нет."""
-
-from __future__ import annotations
-
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -9,7 +5,6 @@ import pytest
 from services.youtube import RE_CHANNEL_ID, RE_HANDLE
 
 
-# ───────────── regex ─────────────
 class TestRegex:
     def test_channel_id_from_plain(self) -> None:
         m = RE_CHANNEL_ID.search("UC-lHJZR3Gqxm24_Vd_AJ5Yw")
@@ -35,10 +30,8 @@ class TestRegex:
         assert m.group(1) == "MrBeast"
 
 
-# ───────────── resolve_channel ─────────────
 @pytest.fixture
 def mocked_client():
-    """YouTubeClient с замоканным googleapiclient build."""
     with patch("services.youtube.build") as build_mock:
         from services.youtube import YouTubeClient
         client = YouTubeClient("FAKE_KEY")
@@ -50,7 +43,6 @@ def _fake_response(channel_id: str, title: str) -> dict:
 
 
 def _setup_channels_list(yt_mock, response: dict) -> MagicMock:
-    """Настроить yt.channels().list(**kwargs).execute() → response. Возвращает list mock."""
     list_mock = MagicMock()
     list_mock.execute.return_value = response
     yt_mock.channels.return_value.list.return_value = list_mock
@@ -64,7 +56,6 @@ async def test_resolve_by_id(mocked_client) -> None:
     result = await client.resolve_channel("UC-lHJZR3Gqxm24_Vd_AJ5Yw")
     assert result == ("UC-lHJZR3Gqxm24_Vd_AJ5Yw", "PewDiePie")
 
-    # Должно искать через id=, а не forHandle=
     kwargs = yt_mock.channels.return_value.list.call_args.kwargs
     assert kwargs.get("id") == "UC-lHJZR3Gqxm24_Vd_AJ5Yw"
     assert "forHandle" not in kwargs

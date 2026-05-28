@@ -1,11 +1,6 @@
-"""Цикл мониторинга YouTube-каналов и рассылка уведомлений в Telegram-чаты."""
-
-from __future__ import annotations
-
 import asyncio
 import logging
 from datetime import datetime, timezone
-from io import BytesIO
 
 import aiohttp
 from aiogram import Bot
@@ -42,7 +37,6 @@ class Notifier:
         self._last_check: dict[str, datetime] = {}
         self._task: asyncio.Task | None = None
 
-    # ───────────── lifecycle ─────────────
     def start(self) -> None:
         if self._task is None or self._task.done():
             self._task = asyncio.create_task(self._loop(), name="notifier-loop")
@@ -56,7 +50,6 @@ class Notifier:
             except (asyncio.CancelledError, Exception):
                 pass
 
-    # ───────────── main loop ─────────────
     async def _loop(self) -> None:
         self.running = True
         log.info("Notifier запущен (интервал %d сек)", self.check_interval)
@@ -108,7 +101,6 @@ class Notifier:
             await self._process_video(session, video)
         self._last_check[channel_id] = datetime.now(timezone.utc)
 
-    # ───────────── video → notification ─────────────
     async def _process_video(self, session: aiohttp.ClientSession, video: dict) -> None:
         video_id = video["id"]
         thumbs = video["snippet"]["thumbnails"]

@@ -1,11 +1,7 @@
-"""Inline-клавиатуры. Все callback_data собраны здесь же — единый словарь токенов."""
-
-from __future__ import annotations
-
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
-# ───────────── callback tokens ─────────────
+# Telegram ограничивает callback_data 64 байтами, поэтому префиксы короткие
 CB_MAIN = "m:main"
 CB_CHANNELS = "m:channels"
 CB_CHATS = "m:chats"
@@ -14,14 +10,14 @@ CB_STATUS = "m:status"
 
 CB_CH_ADD = "ch:add"
 CB_CH_LIST = "ch:list:0"
-CB_CH_DEL = "ch:del:"       # + channel_id
-CB_CH_PAGE = "ch:list:"     # + page index
+CB_CH_DEL = "ch:del:"
+CB_CH_PAGE = "ch:list:"
 
 CB_CHAT_ADD_HERE = "ct:add_here"
 CB_CHAT_DEL_HERE = "ct:del_here"
 CB_CHAT_LIST = "ct:list:0"
-CB_CHAT_DEL = "ct:del:"     # + chat_id
-CB_CHAT_PAGE = "ct:list:"   # + page index
+CB_CHAT_DEL = "ct:del:"
+CB_CHAT_PAGE = "ct:list:"
 
 CB_CANCEL = "cancel"
 CB_NOOP = "noop"
@@ -79,7 +75,6 @@ def paginated_list(
     label_key: str = "name",
     id_key: str = "id",
 ) -> InlineKeyboardMarkup:
-    """Список с кнопками удаления по элементу + пагинация + «Назад»."""
     total = len(items)
     total_pages = max(1, (total + PAGE_SIZE - 1) // PAGE_SIZE)
     page = max(0, min(page, total_pages - 1))

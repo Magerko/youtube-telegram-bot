@@ -1,5 +1,3 @@
-"""Routers admin-bot'а."""
-
 from handlers.channels import router as channels_router
 from handlers.chats import router as chats_router
 from handlers.common import router as common_router

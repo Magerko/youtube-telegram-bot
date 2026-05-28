@@ -1,7 +1,3 @@
-"""Тесты для services.storage.Storage — чистый CRUD над JSON."""
-
-from __future__ import annotations
-
 from pathlib import Path
 
 
@@ -14,11 +10,10 @@ def test_creates_data_folder_and_files(tmp_path: Path) -> None:
     assert (data / "influencers.json").exists()
 
 
-def test_add_chat_persists(storage, tmp_path: Path) -> None:
+def test_add_chat_persists(storage) -> None:
     assert storage.add_chat(111, "Test Group", "supergroup") is True
     assert storage.get_chat_ids() == [111]
 
-    # Перечитываем с диска — должно остаться.
     from services.storage import Storage
     reopened = Storage(storage.data_folder)
     assert reopened.get_chat_ids() == [111]
@@ -34,12 +29,10 @@ def test_remove_chat(storage) -> None:
     storage.add_chat(111, "x", "group")
     assert storage.remove_chat(111) is True
     assert storage.get_chat_ids() == []
-    # Повторное удаление — False.
     assert storage.remove_chat(111) is False
 
 
-def test_chat_id_is_int(storage) -> None:
-    # add_chat принимает строку — нормализует в int.
+def test_chat_id_normalized_to_int(storage) -> None:
     storage.add_chat("123", "x", "group")
     assert storage.get_chat_ids() == [123]
 

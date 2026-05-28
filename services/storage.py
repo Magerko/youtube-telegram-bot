@@ -1,7 +1,3 @@
-"""JSON-хранилище: подписанные чаты + отслеживаемые YouTube-каналы."""
-
-from __future__ import annotations
-
 import json
 import logging
 from datetime import datetime
@@ -21,7 +17,6 @@ class Storage:
         self._ensure_files()
         self._load()
 
-    # ───────────── filesystem ─────────────
     def _ensure_files(self) -> None:
         if not self.data_folder.exists():
             log.info("Создаю папку данных: %s", self.data_folder)
@@ -61,7 +56,6 @@ class Storage:
     def _save_channels(self) -> None:
         self._write(self.channels_file, {"channels": self.channels})
 
-    # ───────────── Telegram chats ─────────────
     def add_chat(self, chat_id: int, title: Optional[str] = None,
                  chat_type: Optional[str] = None) -> bool:
         chat_id = int(chat_id)
@@ -91,7 +85,6 @@ class Storage:
     def get_chat_ids(self) -> list[int]:
         return [c["id"] for c in self.chats]
 
-    # ───────────── YouTube channels ─────────────
     def add_channel(self, name: str, channel_id: str) -> bool:
         name = name.strip()
         channel_id = channel_id.strip()

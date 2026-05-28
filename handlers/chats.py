@@ -1,7 +1,3 @@
-"""Раздел «Чаты уведомлений»: подписка текущего чата + список с удалением."""
-
-from __future__ import annotations
-
 import logging
 from contextlib import suppress
 
@@ -17,10 +13,10 @@ from keyboards import (
     CB_CHAT_DEL,
     CB_CHAT_DEL_HERE,
     CB_CHAT_PAGE,
+    PAGE_SIZE,
     back_to,
     chats_menu,
     paginated_list,
-    PAGE_SIZE,
 )
 from services.storage import Storage
 
@@ -43,7 +39,6 @@ async def _edit(cq: CallbackQuery, text: str, kb) -> None:
     await cq.answer()
 
 
-# ───────────── меню раздела ─────────────
 @router.callback_query(F.data == CB_CHATS, StateFilter("*"))
 async def cb_chats(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()
@@ -56,7 +51,6 @@ async def cb_chats(cq: CallbackQuery, state: FSMContext, storage: Storage) -> No
     await _edit(cq, text, chats_menu())
 
 
-# ───────────── текущий чат ─────────────
 @router.callback_query(F.data == CB_CHAT_ADD_HERE, StateFilter("*"))
 async def cb_chat_add_here(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()
@@ -86,7 +80,6 @@ async def cb_chat_del_here(cq: CallbackQuery, state: FSMContext, storage: Storag
     await cb_chats(cq, state, storage)
 
 
-# ───────────── список + пагинация ─────────────
 @router.callback_query(F.data.startswith("ct:list:"), StateFilter("*"))
 async def cb_chats_list(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()

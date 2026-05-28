@@ -1,7 +1,3 @@
-"""Точка входа: настройка Bot/Dispatcher, регистрация роутеров, запуск мониторинга."""
-
-from __future__ import annotations
-
 import asyncio
 import logging
 
@@ -45,16 +41,13 @@ def _build_fsm_storage() -> BaseStorage:
     if settings.redis_url:
         log.info("FSM storage: Redis (%s)", settings.redis_url)
         return RedisStorage.from_url(settings.redis_url)
-    log.warning(
-        "FSM storage: MemoryStorage — состояния теряются при рестарте. "
-        "Задайте REDIS_URL для продакшна."
-    )
+    log.warning("FSM storage: MemoryStorage — состояния теряются при рестарте")
     return MemoryStorage()
 
 
 async def main() -> None:
     if not settings.admin_users:
-        log.warning("ADMIN_USERS пуст — никто не сможет управлять ботом.")
+        log.warning("ADMIN_USERS пуст — никто не сможет управлять ботом")
 
     bot = Bot(
         settings.bot_token,
@@ -67,12 +60,11 @@ async def main() -> None:
     youtube = YouTubeClient(settings.youtube_api_key)
     notifier = Notifier(bot, storage, youtube, settings.check_interval)
 
-    # Доступ — outer-middleware, чтобы отсекать до фильтров.
     admin_mw = AdminOnlyMiddleware(settings.admin_users)
     dp.message.outer_middleware(admin_mw)
     dp.callback_query.outer_middleware(admin_mw)
 
-    # Routers (common раньше остальных — он перехватывает /cancel и навигацию).
+    # common первым — там /cancel и навигация, которые должны побеждать state-фильтры
     dp.include_routers(common_router, info_router, channels_router, chats_router)
 
     dp.startup.register(on_startup)

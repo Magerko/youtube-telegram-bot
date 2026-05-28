@@ -1,7 +1,3 @@
-"""Раздел «YouTube каналы»: меню, список с пагинацией, удаление, FSM добавления."""
-
-from __future__ import annotations
-
 import logging
 from contextlib import suppress
 
@@ -45,7 +41,6 @@ async def _edit(cq: CallbackQuery, text: str, kb) -> None:
     await cq.answer()
 
 
-# ───────────── меню раздела ─────────────
 @router.callback_query(F.data == CB_CHANNELS, StateFilter("*"))
 async def cb_channels(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()
@@ -56,7 +51,6 @@ async def cb_channels(cq: CallbackQuery, state: FSMContext, storage: Storage) ->
     await _edit(cq, text, channels_menu())
 
 
-# ───────────── список + пагинация ─────────────
 @router.callback_query(F.data.startswith("ch:list:"), StateFilter("*"))
 async def cb_channels_list(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()
@@ -80,7 +74,6 @@ async def cb_channels_list(cq: CallbackQuery, state: FSMContext, storage: Storag
     ))
 
 
-# ───────────── удаление ─────────────
 @router.callback_query(F.data.startswith(CB_CH_DEL), StateFilter("*"))
 async def cb_channel_delete(cq: CallbackQuery, state: FSMContext, storage: Storage) -> None:
     await state.clear()
@@ -91,12 +84,10 @@ async def cb_channel_delete(cq: CallbackQuery, state: FSMContext, storage: Stora
         log.info("Канал удалён: %s (%s)", ch and ch["name"], channel_id)
     else:
         await cq.answer("Не найден", show_alert=True)
-    # Перерисовать список (та же страница).
     cq.data = "ch:list:0"
     await cb_channels_list(cq, state, storage)
 
 
-# ───────────── добавление (FSM) ─────────────
 @router.callback_query(F.data == CB_CH_ADD)
 async def cb_channel_add_start(cq: CallbackQuery, state: FSMContext) -> None:
     await state.set_state(AddChannel.waiting_input)

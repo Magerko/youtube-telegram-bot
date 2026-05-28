@@ -1,7 +1,3 @@
-"""Настройки приложения, читаются из .env при импорте."""
-
-from __future__ import annotations
-
 import os
 from dataclasses import dataclass
 
@@ -14,6 +10,13 @@ def _parse_admins(raw: str) -> frozenset[int]:
     return frozenset(int(x.strip()) for x in raw.split(",") if x.strip())
 
 
+def _required(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise RuntimeError(f"Переменная окружения {name} обязательна. Заполните .env")
+    return value
+
+
 @dataclass(frozen=True)
 class Settings:
     bot_token: str
@@ -22,15 +25,6 @@ class Settings:
     check_interval: int
     data_folder: str
     redis_url: str | None
-
-
-def _required(name: str) -> str:
-    value = os.getenv(name)
-    if not value:
-        raise RuntimeError(
-            f"Переменная окружения {name} обязательна. Заполните .env"
-        )
-    return value
 
 
 settings = Settings(

@@ -1,5 +1,3 @@
-"""FSM-состояния для диалогов админки."""
-
 from aiogram.fsm.state import State, StatesGroup
 
 

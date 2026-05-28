@@ -1,11 +1,7 @@
-"""Тонкая обёртка над YouTube Data API v3 с асинхронными вызовами."""
-
-from __future__ import annotations
-
 import asyncio
 import logging
 import re
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from googleapiclient.discovery import build
@@ -17,15 +13,13 @@ RE_HANDLE = re.compile(r"@([A-Za-z0-9_.\-]{3,})")
 
 
 class YouTubeClient:
-    """Все вызовы googleapiclient синхронны — оборачиваем в `asyncio.to_thread`."""
+    """googleapiclient синхронный — оборачиваем вызовы в asyncio.to_thread."""
 
     def __init__(self, api_key: str) -> None:
         self._yt = build("youtube", "v3", developerKey=api_key, cache_discovery=False)
         self._verified: set[str] = set()
 
-    # ───────────── resolve ─────────────
     async def resolve_channel(self, query: str) -> Optional[tuple[str, str]]:
-        """Из произвольной строки (URL/ID/@handle) вернуть (channel_id, title)."""
         channel_id: Optional[str] = None
         handle: Optional[str] = None
 
@@ -62,7 +56,6 @@ class YouTubeClient:
         item = items[0]
         return item["id"], item["snippet"]["title"]
 
-    # ───────────── verify ─────────────
     async def verify_channel(self, channel_id: str) -> bool:
         if channel_id in self._verified:
             return True
@@ -80,12 +73,7 @@ class YouTubeClient:
             return True
         return False
 
-    # ───────────── new uploads ─────────────
-    async def get_new_uploads(
-        self, channel_id: str, since: datetime
-    ) -> list[dict]:
-        """Список новых видео канала после `since`, отсортированный по убыванию даты."""
-
+    async def get_new_uploads(self, channel_id: str, since: datetime) -> list[dict]:
         def _activities() -> dict:
             return self._yt.activities().list(
                 part="contentDetails,snippet",
