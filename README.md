@@ -67,15 +67,17 @@ Telegram-бот на **aiogram 3**, который отслеживает ука
 
 1. Зайдите в [Google Cloud Console](https://console.cloud.google.com/).
 2. Создайте новый проект (или выберите существующий).
-3. В меню слева: **APIs & Services → Library**.
-4. Найдите **YouTube Data API v3** → нажмите **Enable**.
-5. Перейдите в **APIs & Services → Credentials → Create credentials → API key**.
-6. Скопируйте полученный ключ.
-7. Сразу нажмите **Edit API key** (или **Restrict key** в окне создания) и настройте ограничения:
-   - **Application restrictions** → оставьте как есть (бот работает с бэкенда, IP может меняться; ограничивать по HTTP referrer / IP не нужно).
-   - **API restrictions** — это поле в новом UI обязательное → выберите **Restrict key** → в выпадающем списке отметьте **YouTube Data API v3** → **Save**.
+3. В меню слева: **APIs & Services → Library** → найдите **YouTube Data API v3** → **Enable**.
+   *(Этот шаг обязателен до создания ключа: пока API не включён, его не будет в списке ограничений.)*
+4. **APIs & Services → Credentials → Create credentials → API key** — откроется диалог **Create API key**.
+5. В диалоге заполните:
+   - **Name** — любое (например, `youtube-telegram-bot`).
+   - **Select API restrictions** *(обязательное поле, помечено `*`)* — откройте выпадающий список, отметьте **YouTube Data API v3**, нажмите **OK** под списком.
+   - **Application restrictions** — оставьте **None** (бот работает с бэкенда, IP может меняться).
+   - **Authenticate API calls through a service account** — НЕ ставьте галку (это для Vertex AI / Gemini, не для нас).
+6. Нажмите **Create** и скопируйте показанный ключ — это и есть `YOUTUBE_API_KEY`.
 
-> Без ограничения по API ключ работает со всеми Google API — если он утечёт, кто-то израсходует вашу квоту. Restriction на одно API — must have.
+> Ограничение `Select API restrictions → YouTube Data API v3` критично: без него ключ работает со всеми Google API, и при утечке кто-то израсходует вашу квоту.
 
 > Бесплатная квота YouTube API — 10 000 единиц в сутки; одна проверка канала тратит ~3–5 единиц, поэтому при `CHECK_INTERVAL=300` (5 мин) с 10 каналами квоты хватает с большим запасом.
 
