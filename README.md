@@ -26,19 +26,23 @@ Telegram-бот на **aiogram 3**, который отслеживает ука
 ├── keyboards.py            # inline-клавиатуры и callback-токены
 ├── middlewares.py          # admin-only middleware
 ├── states.py               # FSM-состояния
-├── requirements.txt
+├── pyproject.toml          # метаданные + зависимости (PEP 621)
+├── Dockerfile
+├── docker-compose.yml      # bot + redis
 ├── .env.example            # шаблон для .env
 ├── handlers/
-│   ├── __init__.py
 │   ├── common.py           # /start, /menu, /cancel, главное меню
 │   ├── channels.py         # раздел YouTube + FSM добавления
 │   ├── chats.py            # раздел Telegram-чатов
 │   └── info.py             # справка и статус
 ├── services/
-│   ├── __init__.py
 │   ├── storage.py          # JSON-хранилище
 │   ├── youtube.py          # YouTube Data API + resolver
 │   └── notifier.py         # цикл мониторинга и рассылка
+├── tests/                  # pytest + pytest-asyncio
+│   ├── test_storage.py
+│   ├── test_youtube_resolver.py
+│   └── test_keyboards.py
 └── pydata/                 # создаётся автоматически при первом запуске
     ├── telegram_chats.json
     └── influencers.json
@@ -79,10 +83,10 @@ Telegram-бот на **aiogram 3**, который отслеживает ука
 
 Если админов несколько — перечислите ID через запятую: `123456789,987654321`.
 
-## Установка
+## Установка (локально)
 
 ```bash
-git clone https://github.com/<your-username>/youtube-telegram-bot.git
+git clone https://github.com/Magerko/youtube-telegram-bot.git
 cd youtube-telegram-bot
 
 # (опционально) виртуальное окружение
@@ -92,7 +96,8 @@ python -m venv .venv
 # macOS / Linux:
 source .venv/bin/activate
 
-pip install -r requirements.txt
+pip install .              # только runtime
+pip install -e ".[dev]"    # для разработки (с pytest)
 ```
 
 ## Настройка
@@ -111,15 +116,46 @@ YOUTUBE_API_KEY=AIza...
 ADMIN_USERS=123456789
 CHECK_INTERVAL=300
 DATA_FOLDER=pydata
+# REDIS_URL=redis://localhost:6379/0   # см. ниже
 ```
 
 ## Запуск
+
+### Локально
 
 ```bash
 python bot.py
 ```
 
 В логах должно появиться: `Бот запущен. Админов: 1`.
+
+> Без `REDIS_URL` FSM-состояния хранятся в памяти и теряются при рестарте. Для продакшна задайте `REDIS_URL` или запустите через docker-compose (Redis включён в стек).
+
+### Docker
+
+В корне есть `Dockerfile` и `docker-compose.yml` со связкой **bot + redis**. Перед запуском заполните `.env` (см. выше), затем:
+
+```bash
+docker compose up -d --build
+docker compose logs -f bot
+```
+
+В compose-стеке `REDIS_URL` и `DATA_FOLDER` подставляются автоматически, данные `pydata/` и Redis-снапшоты сохраняются на хосте/в томе.
+
+Остановить:
+
+```bash
+docker compose down
+```
+
+## Тесты
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+Покрыто: storage CRUD, YouTube-resolver (с моком API), пагинация и сборка inline-клавиатур.
 
 ## Использование
 

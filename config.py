@@ -21,6 +21,7 @@ class Settings:
     admin_users: frozenset[int]
     check_interval: int
     data_folder: str
+    redis_url: str | None
 
 
 def _required(name: str) -> str:
@@ -38,4 +39,5 @@ settings = Settings(
     admin_users=_parse_admins(os.getenv("ADMIN_USERS", "")),
     check_interval=int(os.getenv("CHECK_INTERVAL", "300")),
     data_folder=os.getenv("DATA_FOLDER", "pydata"),
+    redis_url=os.getenv("REDIS_URL") or None,
 )

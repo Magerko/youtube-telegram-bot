@@ -8,7 +8,9 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
+from aiogram.fsm.storage.base import BaseStorage
 from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.fsm.storage.redis import RedisStorage
 
 from config import settings
 from handlers import channels_router, chats_router, common_router, info_router
@@ -32,10 +34,22 @@ async def on_startup(notifier: Notifier) -> None:
     log.info("Бот запущен. Админов: %d", len(settings.admin_users))
 
 
-async def on_shutdown(notifier: Notifier, bot: Bot) -> None:
+async def on_shutdown(notifier: Notifier, bot: Bot, fsm_storage: BaseStorage) -> None:
     log.info("Завершение…")
     await notifier.stop()
+    await fsm_storage.close()
     await bot.session.close()
+
+
+def _build_fsm_storage() -> BaseStorage:
+    if settings.redis_url:
+        log.info("FSM storage: Redis (%s)", settings.redis_url)
+        return RedisStorage.from_url(settings.redis_url)
+    log.warning(
+        "FSM storage: MemoryStorage — состояния теряются при рестарте. "
+        "Задайте REDIS_URL для продакшна."
+    )
+    return MemoryStorage()
 
 
 async def main() -> None:
@@ -46,7 +60,8 @@ async def main() -> None:
         settings.bot_token,
         default=DefaultBotProperties(parse_mode=ParseMode.HTML, link_preview_is_disabled=True),
     )
-    dp = Dispatcher(storage=MemoryStorage())
+    fsm_storage = _build_fsm_storage()
+    dp = Dispatcher(storage=fsm_storage)
 
     storage = Storage(settings.data_folder)
     youtube = YouTubeClient(settings.youtube_api_key)
@@ -68,6 +83,7 @@ async def main() -> None:
         storage=storage,
         youtube=youtube,
         notifier=notifier,
+        fsm_storage=fsm_storage,
     )
 
 
